@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 export interface User {
   username: string;
@@ -9,26 +11,27 @@ export interface User {
   providedIn: 'root'
 })
 export class UserService {
-  private users: User[] = [];
+  private apiUrl = 'http://localhost:3000/users';
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
 
-  addUser(newUser: User) {
-    this.users.push(newUser);
-    console.log('Usuario registrado:', newUser);
+  getUsers(): Observable<User[]> {
+    return this.http.get<User[]>(this.apiUrl);
   }
 
-  getUser(username: string): User | undefined {
-    return this.users.find(user => user.username === username);
+  getUser(username: string): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/${username}`);
   }
 
-  login(username: string, password: string): boolean {
-    const user = this.getUser(username);
-    if (user && user.password === password) {
-      console.log('Inicio de sesión exitoso para:', username);
-      return true;
-    }
-    console.log('Credenciales incorrectas');
-    return false;
+  register(user: User): Observable<User> {
+    return this.http.post<User>(this.apiUrl, user);
+  }
+
+  updateUser(username: string, updatedUser: User): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/${username}`, updatedUser);
+  }
+
+  deleteUser(username: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${username}`);
   }
 }
